@@ -3,6 +3,9 @@ package com.androidhive.pushnotifications;
 import static com.androidhive.pushnotifications.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.androidhive.pushnotifications.CommonUtilities.EXTRA_MESSAGE;
 import static com.androidhive.pushnotifications.CommonUtilities.SENDER_ID;
+
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +18,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.androidhive.pushnotification.database.Message;
+import com.androidhive.pushnotification.database.MessageAdapter;
+import com.androidhive.pushnotification.database.MessageSvcSQLiteImpl;
 import com.google.android.gcm.GCMRegistrar;
 
 public class MainActivity extends Activity {
@@ -65,6 +71,12 @@ public class MainActivity extends Activity {
 		GCMRegistrar.checkManifest(this);
 
 		lblMessage = (TextView) findViewById(R.id.lblMessage);
+		mLvMessage = (ListView) findViewById(R.id.lvMessage);
+		MessageSvcSQLiteImpl data = new MessageSvcSQLiteImpl(this);
+		ArrayList<Message> listMessage = data.readAllMessage();
+		MessageAdapter adapter = new MessageAdapter(this, listMessage);
+		mLvMessage.setAdapter(adapter);
+		
 		
 		registerReceiver(mHandleMessageReceiver, new IntentFilter(
 				DISPLAY_MESSAGE_ACTION));
@@ -124,8 +136,8 @@ public class MainActivity extends Activity {
 			 * */
 			
 			// Showing received message
-			lblMessage.append(newMessage + "\n");			
-			Toast.makeText(getApplicationContext(), "New Message: " + newMessage, Toast.LENGTH_LONG).show();
+//			lblMessage.append(newMessage + "\n");			
+//			Toast.makeText(getApplicationContext(), "New Message: " + newMessage, Toast.LENGTH_LONG).show();
 			
 			// Releasing wake lock
 			WakeLocker.release();
