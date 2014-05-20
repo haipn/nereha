@@ -71,7 +71,7 @@ public class MessageSvcSQLiteImpl extends SQLiteOpenHelper implements IMessageSv
         values.put("category", book.getCategory());
         values.put("read", book.getIsRead());
         values.put("message", book.getMessage());
-        db.update("Message", values, "id = ", new String[]{String.valueOf(book.getId())});
+        db.update("Message", values, "id" + "=" + book.getId(), null);
         db.close();
         return book;
     }

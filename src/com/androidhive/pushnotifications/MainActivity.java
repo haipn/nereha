@@ -14,8 +14,11 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidhive.pushnotification.database.Message;
@@ -25,19 +28,19 @@ import com.google.android.gcm.GCMRegistrar;
 
 public class MainActivity extends Activity {
 	// label to display gcm messages
-	TextView lblMessage;
 	ListView mLvMessage;
 	ArrayList<Message> mListMessage;
-	
+
 	// Asyntask
 	AsyncTask<Void, Void, Void> mRegisterTask;
-	
+
 	// Alert dialog manager
 	AlertDialogManager alert = new AlertDialogManager();
-	
+
 	// Connection detector
 	ConnectionDetector cd;
-	
+	private MessageAdapter adapter;
+
 	public static String name;
 	public static String email;
 
@@ -45,7 +48,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		cd = new ConnectionDetector(getApplicationContext());
 
 		// Check if Internet present
@@ -57,13 +60,13 @@ public class MainActivity extends Activity {
 			// stop executing code by return
 			return;
 		}
-		
+
 		// Getting name, email from intent
 		Intent i = getIntent();
-		
+
 		name = i.getStringExtra("name");
-		email = i.getStringExtra("email");		
-		
+		email = i.getStringExtra("email");
+
 		// Make sure the device has the proper dependencies.
 		GCMRegistrar.checkDevice(this);
 
@@ -71,29 +74,52 @@ public class MainActivity extends Activity {
 		// while developing the app, then uncomment it when it's ready.
 		GCMRegistrar.checkManifest(this);
 
-		lblMessage = (TextView) findViewById(R.id.lblMessage);
 		mLvMessage = (ListView) findViewById(R.id.lvMessage);
 		MessageSvcSQLiteImpl data = new MessageSvcSQLiteImpl(this);
-		ArrayList<Message> listMessage = data.readAllMessage();
-		MessageAdapter adapter = new MessageAdapter(this, listMessage);
+		mListMessage = data.readAllMessage();
+		adapter = new MessageAdapter(this, mListMessage);
 		mLvMessage.setAdapter(adapter);
-		
-		
+		mLvMessage.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				MessageSvcSQLiteImpl data = new MessageSvcSQLiteImpl(MainActivity.this);
+				
+				mListMessage.get(position).setRead(1);
+				data.update(mListMessage.get(position));
+				adapter.notifyDataSetChanged();
+			}
+		});
+		mLvMessage.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				MessageSvcSQLiteImpl data = new MessageSvcSQLiteImpl(MainActivity.this);
+				data.delete(mListMessage.get(position));
+				mListMessage.remove(position);
+				adapter.notifyDataSetChanged();
+				return true;
+			}
+		});
 		registerReceiver(mHandleMessageReceiver, new IntentFilter(
 				DISPLAY_MESSAGE_ACTION));
-		
+
 		// Get GCM registration id
 		final String regId = GCMRegistrar.getRegistrationId(this);
 
 		// Check if regid already presents
 		if (regId.equals("")) {
-			// Registration is not present, register now with GCM			
+			// Registration is not present, register now with GCM
 			GCMRegistrar.register(this, SENDER_ID);
 		} else {
 			// Device is already registered on GCM
 			if (GCMRegistrar.isRegisteredOnServer(this)) {
-				// Skips registration.				
-				Toast.makeText(getApplicationContext(), "Already registered with GCM", Toast.LENGTH_LONG).show();
+				// Skips registration.
+				Toast.makeText(getApplicationContext(),
+						"Already registered with GCM", Toast.LENGTH_LONG)
+						.show();
 			} else {
 				// Try to register again, but not in the UI thread.
 				// It's also necessary to cancel the thread onDestroy(),
@@ -118,7 +144,7 @@ public class MainActivity extends Activity {
 				mRegisterTask.execute(null, null, null);
 			}
 		}
-	}		
+	}
 
 	/**
 	 * Receiving push messages
@@ -129,22 +155,22 @@ public class MainActivity extends Activity {
 			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
 			// Waking up mobile if it is sleeping
 			WakeLocker.acquire(getApplicationContext());
-			
+
 			/**
-			 * Take appropriate action on this message
-			 * depending upon your app requirement
-			 * For now i am just displaying it on the screen
+			 * Take appropriate action on this message depending upon your app
+			 * requirement For now i am just displaying it on the screen
 			 * */
-			
+
 			// Showing received message
-//			lblMessage.append(newMessage + "\n");			
-//			Toast.makeText(getApplicationContext(), "New Message: " + newMessage, Toast.LENGTH_LONG).show();
-			
+			// lblMessage.append(newMessage + "\n");
+			// Toast.makeText(getApplicationContext(), "New Message: " +
+			// newMessage, Toast.LENGTH_LONG).show();
+
 			// Releasing wake lock
 			WakeLocker.release();
 		}
 	};
-	
+
 	@Override
 	protected void onDestroy() {
 		if (mRegisterTask != null) {

@@ -2,6 +2,9 @@ package com.androidhive.pushnotifications;
 
 import static com.androidhive.pushnotifications.CommonUtilities.SENDER_ID;
 import static com.androidhive.pushnotifications.CommonUtilities.SERVER_URL;
+
+import com.google.android.gcm.GCMRegistrar;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,7 +32,12 @@ public class RegisterActivity extends Activity {
 		setContentView(R.layout.activity_register);
 		
 		cd = new ConnectionDetector(getApplicationContext());
-
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		if (!regId.equals("")) {
+			startActivity(new Intent(this, MainActivity.class));
+			finish();
+		}
+			
 		// Check if Internet present
 		if (!cd.isConnectingToInternet()) {
 			// Internet Connection is not present

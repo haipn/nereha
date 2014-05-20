@@ -2,13 +2,15 @@ package com.androidhive.pushnotifications;
 
 import static com.androidhive.pushnotifications.CommonUtilities.SENDER_ID;
 import static com.androidhive.pushnotifications.CommonUtilities.displayMessage;
+
+import java.util.Date;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.androidhive.pushnotification.database.Message;
 import com.androidhive.pushnotification.database.MessageSvcSQLiteImpl;
@@ -49,7 +51,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	 * */
 	@Override
 	protected void onMessage(Context context, Intent intent) {
-		Log.i(TAG, "Received message");
+		Log.i(TAG, "Received message :" + intent.getExtras().toString());
 		String message = intent.getExtras().getString("price");
 
 		
@@ -64,16 +66,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 	}
 
 	private Message parseMsg(Context con, String message) {
-		if (!message.startsWith("999")) {
-			Toast.makeText(con, "message don't start with 999",
-					Toast.LENGTH_SHORT).show();
-			return null;
-		}
-		message = message.substring(3);
-		String date = message.substring(0, 13);
-		String category = message.substring(14, 29);
-		String msg = message.substring(30);
-		return new Message(category, date, msg, 0);
+//		if (!message.startsWith("999")) {
+//			Toast.makeText(con, "message don't start with 999",
+//					Toast.LENGTH_SHORT).show();
+//			return null;
+//		}
+//		message = message.substring(3);
+//		String date = message.substring(0, 13);
+//		String category = message.substring(14, 29);
+//		String msg = message.substring(30);
+		String msg = message;
+		Date d = new Date();
+		String date = d.toString();
+		return new Message("", date, msg, 0);
 	}
 
 	/**
@@ -120,8 +125,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		// set intent so it does not start a new activity
-		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+//				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 		PendingIntent intent = PendingIntent.getActivity(context, 0,
 				notificationIntent, 0);
 		notification.setLatestEventInfo(context, title, message, intent);
