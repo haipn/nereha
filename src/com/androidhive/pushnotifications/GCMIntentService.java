@@ -52,11 +52,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Log.i(TAG, "Received message");
 		String message = intent.getExtras().getString("price");
 
-		displayMessage(context, message);
-		// notifies user
+		
+		// add to database
 		MessageSvcSQLiteImpl data = new MessageSvcSQLiteImpl(context);
 		Message msg = parseMsg(context, message);
 		data.create(msg);
+		//display message to notification bar
+		displayMessage(context, msg.msg);
+		//notify users
 		generateNotification(context, msg.getMessage());
 	}
 
