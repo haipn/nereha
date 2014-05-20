@@ -3,6 +3,9 @@ package com.androidhive.pushnotifications;
 import static com.androidhive.pushnotifications.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.androidhive.pushnotifications.CommonUtilities.EXTRA_MESSAGE;
 import static com.androidhive.pushnotifications.CommonUtilities.SENDER_ID;
+
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,12 +18,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.androidhive.pushnotification.database.Message;
 import com.google.android.gcm.GCMRegistrar;
 
 public class MainActivity extends Activity {
 	// label to display gcm messages
 	TextView lblMessage;
 	ListView mLvMessage;
+	ArrayList<Message> mListMessage;
 	
 	// Asyntask
 	AsyncTask<Void, Void, Void> mRegisterTask;
